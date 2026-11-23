@@ -56,10 +56,13 @@ def lock(atoms,qs,results,n):
         labels.append(CONTRADICTED if CONTRADICTED in vals else INSUFFICIENT if INSUFFICIENT in vals else SUPPORTED)
     return labels
 
-def audit(raw,lines,mode="multi",inject=False,path=None,invoke=None):
+def audit(raw,lines,mode="multi",inject=False,path=None,invoke=None,discovery_context=None):
     rows=read_csv(raw);invoke=invoke or call
     if mode not in ("single","multi") or not 1<=len(lines)<=20 or any(not isinstance(s,str) or not 1<=len(s.strip())<=1500 for s in lines):raise ValueError("请输入 1 至 20 条结论，每行一句")
     base=dict(sentences=[dict(source=i+1,text=s) for i,s in enumerate(lines)],schema=profile(rows))
+    if discovery_context is not None:
+        base["探索口径"]=discovery_context
+        base["核验提示"]="独立核查候选句。方向或大小比较属于描述；仅明确归因时标为因果。scope 只含两侧共同限定，不能包含被比较的两个不同类别、月份或季度。单一范围对常数的比较保留该范围。"
     d=dict(version=1,run_id=uuid.uuid4().hex,mode=mode,injection="人工注入：去掉首轮分组限定" if inject else None,sha256=digest(raw),row_count=len(rows),**base,events=[],rounds=[],status="运行中")
     def persist():
         if path:save(path,d)
@@ -116,8 +119,13 @@ def audit(raw,lines,mode="multi",inject=False,path=None,invoke=None):
 def reproduce(raw,d):
     if digest(raw)!=d["sha256"]:raise ValueError("CSV 的 SHA-256 与报告不符")
     rows=read_csv(raw)
-    if not d["rounds"]:raise ValueError("报告中无可复算轮次")
     checks=0
+    if d.get("version")==2 and d.get("mode")!="analysis":raise ValueError("分析记录模式不一致")
+    if d.get("mode")=="analysis":
+        from discovery import replay_analysis
+        checks=replay_analysis(rows,d)
+    if not d["rounds"] and not (d.get("mode")=="analysis" and d["status"] in ("无可核验发现","运行失败")):
+        raise ValueError("报告中无可复算轮次")
     for step in d["rounds"]:
         if len(step["executed"])!=len(step["results"]):raise ValueError("请求与结果数量不同")
         actual=[execute(rows,q) for q in step["executed"]]

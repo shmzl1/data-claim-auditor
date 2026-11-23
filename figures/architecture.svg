@@ -1,8 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="890" height="550" viewBox="0 0 890 550"><defs>
+<svg xmlns="http://www.w3.org/2000/svg" width="890" height="749" viewBox="0 0 890 749"><defs>
 <marker id="flow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1 L9 5 L0 9Z" fill="#4b6a75"/></marker>
 <marker id="ret" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 1 L9 5 L0 9Z" fill="#9c5530"/></marker>
-</defs><rect width="890" height="550" fill="white"/><style>text{font-family:Microsoft YaHei,sans-serif;text-anchor:middle;fill:#203d49}.title{font-size:19px;font-weight:bold}.sub,.label{font-size:16px}.label{paint-order:stroke;stroke:white;stroke-width:3px;stroke-linejoin:round}text[fill]{fill:revert-layer}</style>
-<rect x="16" y="15" width="185" height="60" rx="6" fill="#f9f4ea" stroke="#adc0c6"/><text x="108.5" y="39" class="title">待审查原句</text><text x="108.5" y="61" class="sub">按行保留编号</text>
+</defs><rect width="890" height="749" fill="white"/><style>text{font-family:Microsoft YaHei,sans-serif;text-anchor:middle;fill:#203d49}.title{font-size:19px;font-weight:bold}.sub,.label{font-size:16px}.label{paint-order:stroke;stroke:white;stroke-width:3px;stroke-linejoin:round}text[fill]{fill:revert-layer}</style>
+<rect x="16" y="15" width="161" height="61" rx="6" fill="#f9f4ea" stroke="#adc0c6"/><text class="title" x="96.5" y="40">分析数据</text><text class="sub" x="96.5" y="63">CSV · 关注点可留空</text>
+<rect x="203" y="15" width="193" height="61" rx="6" fill="#eff2fa" stroke="#adc0c6"/><text class="title" x="299.5" y="40">数据分析 Agent</text><text class="sub" x="299.5" y="63">读字段概况，自主提问</text>
+<rect x="425" y="15" width="166" height="61" rx="6" fill="#e7f2ed" stroke="#adc0c6"/><text class="title" x="508.0" y="40">本地统计程序</text><text class="sub" x="508.0" y="63">在原表执行查询</text>
+<rect x="620" y="15" width="252" height="61" rx="6" fill="#eff2fa" stroke="#adc0c6"/><text class="title" x="746.0" y="40">同一数据分析 Agent</text><text class="sub" x="746.0" y="63">读实算结果，起草候选发现</text>
+<path d="M177 46 H200" fill="none" stroke="#4b6a75" stroke-width="2" marker-end="url(#flow)"/>
+<path d="M396 46 H422" fill="none" stroke="#4b6a75" stroke-width="2" marker-end="url(#flow)"/>
+<path d="M591 46 H617" fill="none" stroke="#4b6a75" stroke-width="2" marker-end="url(#flow)"/>
+<path d="M746 76 V105 H233 V190 H163 V211" fill="none" stroke="#4b6a75" stroke-width="2" marker-end="url(#flow)"/>
+<rect x="16" y="120" width="185" height="61" rx="6" fill="#f9f4ea" stroke="#adc0c6"/><text class="title" x="108.5" y="145">核验结论</text><text class="sub" x="108.5" y="168">CSV ＋ 已有结论</text>
+<path d="M90 181 V211" fill="none" stroke="#4b6a75" stroke-width="2" marker-end="url(#flow)"/>
+<text class="sub" x="550" y="97">候选发现与探索口径</text>
+<text class="title" x="496" y="170">两种入口共用同一核验流程</text>
+<g transform="translate(0,199)">
+<rect x="16" y="15" width="185" height="60" rx="6" fill="#f9f4ea" stroke="#adc0c6"/><text x="108.5" y="39" class="title">待核验语句</text><text x="108.5" y="61" class="sub">按行保留编号</text>
 <rect x="282" y="15" width="258" height="60" rx="6" fill="#eff2fa" stroke="#adc0c6"/><text x="411" y="39" class="title">结论解析 Agent</text><text x="411" y="61" class="sub">拆出人群、时间、比较对象</text>
 <path d="M201 44 H280" fill="none" stroke="#4b6a75" stroke-width="2"  marker-end="url(#flow)"/>
 <path d="M410 75 V103" fill="none" stroke="#4b6a75" stroke-width="2"  marker-end="url(#flow)"/>
@@ -30,4 +43,4 @@
 
 <path d="M540 515 H625" fill="none" stroke="#4b6a75" stroke-width="2"  marker-end="url(#flow)"/>
 <rect x="628" y="486" width="240" height="58" rx="6" fill="#f9f4ea" stroke="#adc0c6"/><text x="748" y="510" class="title">下载与离线复算</text><text x="748" y="532" class="sub">Markdown 报告、JSON 记录</text>
-</svg>
+</g></svg>

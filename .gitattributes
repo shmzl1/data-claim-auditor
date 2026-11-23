@@ -1,2 +1,4 @@
 # The reproducibility check fingerprints the exact uploaded CSV bytes.
 /examples/conversion.csv -text
+
+/examples/sales.csv -text
