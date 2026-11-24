@@ -1,18 +1,42 @@
-import json
-from stats import INSUFFICIENT
+from decimal import Decimal, localcontext
+from fractions import Fraction
 
 def filters(f):
     return "、".join(f"{k}={v}" for k,v in f.items()) or "全部记录"
+
+def display_number(raw):
+    """Stored aggregates may be exact fractions of decimal CSV values."""
+    if "/" in str(raw):
+        value = Fraction(raw)
+        with localcontext() as ctx:
+            ctx.prec = len(str(abs(value.numerator))) + value.denominator.bit_length() + 2
+            decimal = Decimal(value.numerator) / Decimal(value.denominator)
+    else:
+        decimal = Decimal(str(raw))
+    text = format(decimal, ",f")
+    return text.rstrip("0").rstrip(".") if "." in text else text
+
 
 def evidence_text(q,r):
     parts=[]
     for side in ("left","right"):
         if side not in r:continue
-        x=r[side]
-        fraction=f"{x['num_field']} 合计 {x['numerator']}"
-        if x["den_field"]:fraction+=f" / {x['den_field']} 合计 {x['denominator']}"
-        parts.append(f"{filters(x['filters'])}（{x['rows']} 行）　{fraction} → {x['value']}{x['unit']}")
-    if "target" in r:parts.append("声明值 "+r["target"]+("%" if q["metric"]=="比例" else ""))
+        x = r[side]
+        num = display_number(x["numerator"])
+        if q["metric"] == "合计":
+            detail = f"{x['num_field']}合计 {num}"
+        elif q["metric"] == "计数":
+            detail = f"记录数 {num}"
+        else:
+            den = display_number(x["denominator"])
+            exact = Fraction(x["numerator"]) / Fraction(x["denominator"])
+            if q["metric"] == "比例":
+                exact *= 100
+            sign = "=" if exact == Fraction(x["value"]) else "≈"
+            detail = (f"{x['num_field']}/{x['den_field']}　"
+                      f"{num}/{den} {sign} {display_number(x['value'])}{x['unit']}")
+        parts.append(f"{filters(x['filters'])}（{x['rows']} 行）　{detail}")
+    if "target" in r:parts.append("声明值 "+display_number(r["target"])+("%" if q["metric"]=="比例" else ""))
     if r.get("reason"):parts.append(r["reason"])
     return parts
 

@@ -14,7 +14,7 @@ sys.path.insert(0,str(ROOT))
 import app
 from audit import reproduce
 from discovery import analyze,checked_plan,evaluate_question
-from reporting import markdown
+from reporting import markdown,evidence_text
 from stats import read_csv
 
 def record(name):
@@ -49,6 +49,26 @@ class DiscoveryTests(unittest.TestCase):
         self.assertEqual(float(values[0]["left"]["value"]),2)
         self.assertEqual({float(values[1][s]["value"]) for s in ("left","right")},{2,126})
         self.assertEqual(float(values[2]["left"]["value"]),2/20*100)
+
+    def test_sum_displayed_once(self):
+        table=app.discovery_panel(self.d)
+        self.assertEqual(table.count("销售额合计 40,000"),1)
+        self.assertEqual(table.count("销售额合计 45,000"),1)
+        self.assertNotIn("→",table)
+
+    def test_fractional_sum_preserves_exact_value(self):
+        q=dict(metric="合计",num="销售额",left={},right=None)
+        rows=read_csv("销售额\n-1000.125\n-0.000000001\n".encode())
+        result=evaluate_question(rows,q)
+        self.assertEqual(evidence_text(q,result),["全部记录（2 行）　销售额合计 -1,000.125000001"])
+
+    def test_ratio_display_retains_population(self):
+        d=record("analysis-conversion")
+        panel=app.discovery_panel(d)
+        self.assertIn("月份=5月",panel)
+        self.assertIn("用户类型=新用户",panel)
+        self.assertIn("2/20 = 10%",panel)
+        self.assertIn("2/20 = 10%",markdown(d))
 
     def test_focus_and_missing_dimension(self):
         d=record("analysis-focus");a=d["analysis"]
