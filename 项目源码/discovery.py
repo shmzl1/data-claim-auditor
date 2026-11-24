@@ -3,6 +3,7 @@ import uuid
 
 from audit import audit
 from model import call
+from trend import decompose,rate_questions
 from stats import aggregate, digest, fmt, number, profile, read_csv, validate
 
 
@@ -101,14 +102,26 @@ def analyze(raw, focus="", invoke=None):
                 if attempt: raise ValueError("分析输出格式错误："+str(exc)) from None
                 payload = dict(payload,format_feedback=str(exc),previous_output=out)
     try:
-        questions, limitations = ask(dict(stage="plan",schema=schema,row_count=len(rows),focus=focus.strip()),
-                                     lambda out: checked_plan(out,rows))
+        def plan(output):
+            questions,limitations=checked_plan(output,rows)
+            return questions,limitations,output.get("trend",{"status":"待确认","reason":"尚未确定统计字段含义"})
+        questions, limitations, spec = ask(dict(stage="plan",schema=schema,row_count=len(rows),focus=focus.strip()),
+                                     plan)
+        trend=decompose(rows,spec)
+        analysis["trend"]={"spec":spec,"result":trend}
+        if trend["status"]=="严格反转" and len(trend["groups"])<20:
+            # 核验总体与每一个组，不能仅提交有利于反转结论的部分组。
+            questions=[]
+            for i,item in enumerate(rate_questions(spec,trend),1):
+                questions.append(dict(id=f"Q{i}",**item,result=evaluate_question(rows,item["query"])))
+        elif trend["status"]=="严格反转":
+            limitations.append("超过单批20句核验上限；分解覆盖所有组，逐组核验待人工确认。")
         analysis.update(questions=questions,limitations=limitations)
         usable = [q for q in questions if "result" in q]
         if not usable:
             record["status"] = "无可核验发现"
             return record
-        texts = ask(dict(stage="draft",focus=focus.strip(),observations=usable),
+        texts = ask(dict(stage="draft",focus=focus.strip(),observations=usable,trend=analysis["trend"]),
                     lambda out: checked_findings(out,usable))
         for source,(q,text) in enumerate(zip(usable,texts),1):
             q.update(source=source,draft=text)
@@ -120,7 +133,7 @@ def analyze(raw, focus="", invoke=None):
             common=left if right is None else {k:v for k,v in left.items() if right.get(k)==v}
             context.append(dict(source=q["source"],question=q["question"],metric=query["metric"],
                                 left=left,right=right,两侧共同限定=common))
-        verified = audit(raw,texts,invoke=invoke,discovery_context=context)
+        verified = audit(raw,texts,invoke=invoke,discovery_context=context,trend_context=analysis["trend"])
         verified.update(version=2,mode="analysis",analysis=analysis,events=events+verified["events"])
         return verified
     except (ValueError,TypeError,KeyError,RuntimeError) as exc:
@@ -129,7 +142,11 @@ def analyze(raw, focus="", invoke=None):
 
 
 def replay_analysis(rows, record):
-    questions=record["analysis"]["questions"]
+    analysis=record["analysis"]
+    if "两期分解" in record and record["两期分解"]!=analysis.get("trend"):raise ValueError("核验上下文与趋势记录不一致")
+    if "trend" in analysis and decompose(rows,analysis["trend"]["spec"])!=analysis["trend"]["result"]:
+        raise ValueError("两期分解重算不一致")
+    questions=analysis["questions"]
     if not questions:raise ValueError("无分析查询可复算")
     count=0
     drafts=[]

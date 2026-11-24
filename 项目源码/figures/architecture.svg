@@ -33,10 +33,14 @@
 <path d="M410 353 V386" fill="none" stroke="#4b6a75" stroke-width="2"  marker-end="url(#flow)"/>
 <text x="479" y="375" class="label" fill="#405c66">审查意见</text>
 <rect x="282" y="388" width="258" height="60" rx="6" fill="#e7f2ed" stroke="#adc0c6"/><text x="411" y="412" class="title">控制程序</text><text x="411" y="434" class="sub">合并异议与程序范围检查</text>
-<path d="M540 418 H818 V44 H542" fill="none" stroke="#9c5530" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ret)"/>
-<text x="678" y="32" class="label" fill="#94502c">拆分遗漏 → 退回解析</text>
-<path d="M540 431 H670 V135 H542" fill="none" stroke="#9c5530" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#ret)"/>
-<text x="681" y="120" class="label" fill="#94502c">筛选或分母有误 → 退回复算</text>
+<g fill="none" stroke="#9c5530" stroke-width="2" stroke-dasharray="6 4">
+<path d="M540 418 H818 V45"/>
+<path d="M818 135 H542" marker-end="url(#ret)"/>
+<path d="M818 45 H542" marker-end="url(#ret)"/>
+</g>
+<circle cx="818" cy="135" r="3.2" fill="#9c5530"/>
+<text x="680" y="30" class="label" fill="#94502c">拆分遗漏</text>
+<text x="680" y="120" class="label" fill="#94502c">筛选或分母有误</text>
 <path d="M410 448 V484" fill="none" stroke="#4b6a75" stroke-width="2"  marker-end="url(#flow)"/>
 <rect x="282" y="486" width="258" height="58" rx="6" fill="#eff2fa" stroke="#adc0c6"/><text x="411" y="510" class="title">报告编辑 Agent</text><text x="411" y="532" class="sub">按原句写依据与建议</text>
 <text x="561" y="474" class="label" fill="#405c66">无异议：锁定判定与计算证据</text>

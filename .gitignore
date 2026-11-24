@@ -4,3 +4,7 @@ __pycache__/
 .venv/
 local/
 *_系统设计.md
+/image/
+/项目源码/署名报告预览.html
+**/.env.*
+!**/.env.example

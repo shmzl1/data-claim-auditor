@@ -5,6 +5,8 @@ from pathlib import Path
 import base64,csv,json,re,secrets
 from audit import ROOT,audit,save
 from discovery import analyze
+from trend import trend_lines
+from adjudication import decision_lines
 from reporting import evidence_text,markdown
 
 TOKEN=secrets.token_urlsafe(32)
@@ -40,7 +42,7 @@ def home(task="analysis"):
       const result=await rsp.json();if(!rsp.ok)throw Error(result.error);location.href=result.url;
       }catch(err){status.textContent=err.message;btn.disabled=false}
     };</script>""".replace("TOKEN_VALUE",TOKEN)
-    return shell(nav+'<h1>'+title+'</h1><p>'+intro+'</p><section><form data-endpoint="'+('/analyze' if analysis else '/audit')+'"><label for="csv">UTF-8 CSV 数据表</label><br><input type="file" id="csv" accept=".csv,text/csv" '+attr+'><p><small>限 1 MB。模型接收字段概况和汇总结果。'+('' if analysis else '不选文件时使用转化样例。')+'</small></p>'+fields+'<button>开始'+title+'</button> <span id="status" role="status"></span></form></section><section><h2>课程样例与历史回放</h2><div class="links"><a href="/sample.csv">转化数据 CSV</a><a href="/sales.csv">销售数据 CSV</a><a href="/view?case=analysis-conversion">转化数据分析</a><a href="/view?case=analysis-sales">销售数据分析</a><a href="/view?case=multi">四角色核验</a><a href="/view?case=injected">人工注入</a><a href="/view?case=single">单角色基线</a></div></section>'+script)
+    return shell(nav+'<h1>'+title+'</h1><p>'+intro+'</p><section><form data-endpoint="'+('/analyze' if analysis else '/audit')+'"><label for="csv">UTF-8 CSV 数据表</label><br><input type="file" id="csv" accept=".csv,text/csv" '+attr+'><p><small>限 1 MB。模型接收字段概况和汇总结果。'+('' if analysis else '不选文件时使用转化样例。')+'</small></p>'+fields+'<button>开始'+title+'</button> <span id="status" role="status"></span></form></section><section><h2>课程样例与历史回放</h2><p><small>回放读取项目附带的记录，可查看结论、计算过程并下载报告。</small></p><div class="links"><a href="/sample.csv">转化数据 CSV</a><a href="/sales.csv">销售数据 CSV</a><a href="/view?case=analysis-conversion">转化数据分析</a><a href="/view?case=trend-conversion">两期趋势分解</a><a href="/view?case=decision-bad">异议裁决回放</a><a href="/view?case=analysis-sales">销售数据分析</a><a href="/view?case=multi">四角色核验</a><a href="/view?case=injected">人工注入</a><a href="/view?case=single">单角色基线</a></div></section>'+script)
 
 def discovery_panel(d):
     analysis = d["analysis"]
@@ -57,11 +59,20 @@ def render(d,query):
     analysis=d.get("mode")=="analysis"
     archived=query.startswith("case=")
     parts=[f'<small>{"历史回放" if archived else "实际运行"}　/　{h(d["mode"])}　/　{h(d["run_id"])}</small><h1>{"数据分析报告" if analysis else "逐句审查结果"}</h1><p>{h(d["status"])}　·　{d["row_count"]} 行 CSV　·　{len(d["events"])} 次模型请求</p>']
+    if d.get("controlled_fault"):parts.append('<p class="note">'+h(d["controlled_fault"])+'</p>')
     if d.get("injection"):parts.append('<p class="note">'+h(d["injection"])+'。首轮展示的是实际执行的错误口径。</p>')
     if d.get("error"):parts.append('<p class="bad">'+h(d["error"])+'</p>')
-    if d.get("unresolved"):parts.append('<p class="note">达到上限或异议重复，请人工核查。</p>')
+    if d.get("unresolved"):parts.append('<p class="note">仍有未解决的口径问题，请确认原句及统计范围。</p>')
     parts.append(f'<div><a class="btn" href="/export.md?{query}">{"下载分析报告" if analysis else "下载审查报告"}</a><a class="btn" href="/export.json?{query}">下载复算记录</a></div>')
-    if analysis:parts.append(discovery_panel(d))
+    if analysis:
+        if "trend" in d["analysis"]:
+            lines=trend_lines(d["analysis"]["trend"])
+            parts.append('<section><h2>总体与各组走势</h2><p><strong>'+h(lines[0])+'</strong></p>')
+            for text in lines[1:]:
+                style=' class="note"' if text.startswith("构成贡献") else ""
+                parts.append('<p'+style+'>'+h(text)+'</p>')
+            parts.append('</section>')
+        parts.append(discovery_panel(d))
     final={i["source"]:i for i in d.get("items",[])}
     for sentence in d["sentences"]:
         n=sentence["source"];i=final.get(n)
@@ -77,7 +88,10 @@ def render(d,query):
                 parts.append('<tr><td>'+h(atoms[q["id"]]["claim"])+'</td><td>'+'<br>'.join(h(x) for x in evidence_text(q,r))+'</td></tr>')
             parts.append('</table>')
             for issue in step.get("review",[]):
+                if any(x["id"]==issue["id"] and x["objection"]==issue["reason"] for x in step.get("decisions",[])):continue
                 if issue["id"] in atoms:parts.append('<p class="note">退回'+h(issue["target"])+'　'+h(issue["reason"])+'。'+h(issue["fix"])+'</p>')
+            for dec in step.get("decisions",[]):
+                if dec["id"] in atoms:parts.append('<div class="note"><b>分歧裁决</b>'+''.join('<p>'+h(v)+'</p>' for v in decision_lines(dec))+'</div>')
             checks=[i for i in step.get('program_checks',[]) if i['id'] in atoms]
             if checks:parts.append('<small>范围校验：'+h('、'.join(i['id'] for i in checks))+' 的计算口径与主张不一致。</small>')
         parts.append('</section>')
@@ -97,6 +111,9 @@ class Handler(BaseHTTPRequestHandler):
         if u.path not in ("/view","/export.md","/export.json"):return self.reply("不存在","text/plain;charset=utf-8",404)
         if q.get("case",[""])[0] in ("single","multi","injected","analysis-conversion","analysis-sales","analysis-focus"):
             key=q["case"][0];path=ROOT/"evidence"/(key+".json");query="case="+key
+        elif q.get("case",[""])[0] in ("trend-conversion","trend-clinic","trend-sales","decision-bad","decision-equal","decision-unclear","decision-control","decision-missing"):
+            key=q["case"][0];folder="after" if key.startswith("decision-") else "trend"
+            path=ROOT/"evidence"/"enhancements"/folder/(key.split("-",1)[1]+".json");query="case="+key
         elif re.fullmatch("[a-f0-9]{32}",q.get("run",[""])[0]):
             key=q["run"][0];path=LOCAL/(key+".json");query="run="+key
         else:return self.reply("无效运行","text/plain;charset=utf-8",404)

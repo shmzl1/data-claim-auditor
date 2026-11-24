@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="420" viewBox="0 0 920 420"><rect width="920" height="420" fill="white"/><g font-family="Microsoft YaHei, Noto Sans CJK SC, sans-serif">
+<text x="26" y="35" fill="#233544" font-size="21" font-weight="700" text-anchor="start">A   两期转化率</text>
+<text x="485" y="35" fill="#233544" font-size="21" font-weight="700" text-anchor="start">B   总体变化的来源</text>
+<line x1="455" y1="18" x2="455" y2="354" stroke="#cad3d5" stroke-width="1" stroke-dasharray=""/>
+<text x="27" y="68" fill="#233544" font-size="15" font-weight="400" text-anchor="start">单位：%</text>
+<text x="485" y="68" fill="#233544" font-size="15" font-weight="400" text-anchor="start">单位：百分点</text>
+<line x1="117" y1="308.0" x2="335" y2="308.0" stroke="#e2e7e7" stroke-width="1" stroke-dasharray=""/>
+<text x="105" y="313.0" fill="#64767a" font-size="13" font-weight="400" text-anchor="end">0</text>
+<line x1="117" y1="255.0" x2="335" y2="255.0" stroke="#e2e7e7" stroke-width="1" stroke-dasharray=""/>
+<text x="105" y="260.0" fill="#64767a" font-size="13" font-weight="400" text-anchor="end">20</text>
+<line x1="117" y1="202.0" x2="335" y2="202.0" stroke="#e2e7e7" stroke-width="1" stroke-dasharray=""/>
+<text x="105" y="207.0" fill="#64767a" font-size="13" font-weight="400" text-anchor="end">40</text>
+<line x1="117" y1="149.0" x2="335" y2="149.0" stroke="#e2e7e7" stroke-width="1" stroke-dasharray=""/>
+<text x="105" y="154.0" fill="#64767a" font-size="13" font-weight="400" text-anchor="end">60</text>
+<line x1="117" y1="96.0" x2="335" y2="96.0" stroke="#e2e7e7" stroke-width="1" stroke-dasharray=""/>
+<text x="105" y="101.0" fill="#64767a" font-size="13" font-weight="400" text-anchor="end">80</text>
+<line x1="138" y1="239.10000000000002" x2="317" y2="138.4" stroke="#007565" stroke-width="4" stroke-dasharray=""/>
+<circle cx="138" cy="239.10000000000002" r="4.5" fill="#007565"/>
+<circle cx="317" cy="138.4" r="4.5" fill="#007565"/>
+<text x="124" y="231.10000000000002" fill="#007565" font-size="15" font-weight="400" text-anchor="end">26%</text>
+<text x="330" y="150.4" fill="#007565" font-size="17" font-weight="700" text-anchor="start">总体 64%</text>
+<line x1="138" y1="255.0" x2="317" y2="281.5" stroke="#ad632c" stroke-width="2.5" stroke-dasharray=""/>
+<circle cx="138" cy="255.0" r="4.5" fill="#ad632c"/>
+<circle cx="317" cy="281.5" r="4.5" fill="#ad632c"/>
+<text x="124" y="247.0" fill="#ad632c" font-size="15" font-weight="400" text-anchor="end">20%</text>
+<text x="330" y="281.5" fill="#ad632c" font-size="17" font-weight="400" text-anchor="start">新用户 10%</text>
+<line x1="138" y1="96.0" x2="317" y2="122.5" stroke="#576ca2" stroke-width="2.5" stroke-dasharray=""/>
+<circle cx="138" cy="96.0" r="4.5" fill="#576ca2"/>
+<circle cx="317" cy="122.5" r="4.5" fill="#576ca2"/>
+<text x="124" y="88.0" fill="#576ca2" font-size="15" font-weight="400" text-anchor="end">80%</text>
+<text x="330" y="122.5" fill="#576ca2" font-size="17" font-weight="400" text-anchor="start">老用户 70%</text>
+<text x="138" y="339" fill="#233544" font-size="17" font-weight="400" text-anchor="middle">4月</text>
+<text x="317" y="339" fill="#233544" font-size="17" font-weight="400" text-anchor="middle">5月</text>
+<line x1="510" y1="308" x2="884" y2="308" stroke="#6c8085" stroke-width="1" stroke-dasharray=""/>
+<rect x="535" y="104.0" width="77" height="204.0" fill="#007565"/>
+<text x="573" y="92.0" fill="#007565" font-size="23" font-weight="700" text-anchor="middle">+48</text>
+<text x="573" y="339" fill="#233544" font-size="17" font-weight="400" text-anchor="middle">构成变化</text>
+<rect x="658" y="104.0" width="77" height="42.5" fill="#ad632c"/>
+<text x="696" y="92.0" fill="#ad632c" font-size="23" font-weight="700" text-anchor="middle">-10</text>
+<text x="696" y="339" fill="#233544" font-size="17" font-weight="400" text-anchor="middle">组内变化</text>
+<rect x="781" y="146.5" width="77" height="161.5" fill="#294e64"/>
+<text x="819" y="134.5" fill="#294e64" font-size="23" font-weight="700" text-anchor="middle">+38</text>
+<text x="819" y="339" fill="#233544" font-size="17" font-weight="400" text-anchor="middle">总变化</text>
+<line x1="612" y1="104.0" x2="658" y2="104.0" stroke="#899a9d" stroke-width="1" stroke-dasharray="4 3"/>
+<line x1="735" y1="146.5" x2="781" y2="146.5" stroke="#899a9d" stroke-width="1" stroke-dasharray="4 3"/>
+<rect x="20" y="363" width="880" height="42" rx="5" fill="#eef4f1"/>
+<text x="460" y="391" fill="#233544" font-size="18" font-weight="400" text-anchor="middle">新用户人数占比 90% → 10%；老用户人数占比 10% → 90%</text>
+</g></svg>

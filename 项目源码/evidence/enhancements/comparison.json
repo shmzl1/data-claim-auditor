@@ -1,0 +1,173 @@
+{
+  "baseline_commit": "6e221543e1a46368b483af0749ead2ca12bcafeb",
+  "paired": [
+    {
+      "phase": "before",
+      "case": "missing",
+      "run": "a7a8ffabefc94ef8bcb00875d56b6440",
+      "status": "已完成",
+      "calls": 6,
+      "rounds": 2,
+      "final_filters": {
+        "月份": "5月",
+        "用户类型": "新用户"
+      },
+      "adjudication": []
+    },
+    {
+      "phase": "before",
+      "case": "equal",
+      "run": "3c90c50e740149d19923326a3b9fc219",
+      "status": "已完成",
+      "calls": 6,
+      "rounds": 2,
+      "final_filters": {
+        "月份": "5月",
+        "用户类型": "新用户"
+      },
+      "adjudication": []
+    },
+    {
+      "phase": "before",
+      "case": "bad",
+      "run": "1f144e2e949a4b4fa272f93430860da0",
+      "status": "已完成",
+      "calls": 6,
+      "rounds": 2,
+      "final_filters": {
+        "月份": "5月",
+        "用户类型": "新用户"
+      },
+      "adjudication": []
+    },
+    {
+      "phase": "before",
+      "case": "unclear",
+      "run": "be1f254d7c914b879f203fbfca337739",
+      "status": "已完成",
+      "calls": 6,
+      "rounds": 2,
+      "final_filters": {
+        "月份": "5月",
+        "用户类型": "老用户"
+      },
+      "adjudication": []
+    },
+    {
+      "phase": "before",
+      "case": "control",
+      "run": "b00eb7c4505847b28fdd7209aedf2944",
+      "status": "已完成",
+      "calls": 4,
+      "rounds": 1,
+      "final_filters": {
+        "月份": "5月",
+        "用户类型": "新用户"
+      },
+      "adjudication": []
+    },
+    {
+      "phase": "after",
+      "case": "missing",
+      "run": "22b9f407d6e34e0c8c46b99c652703bf",
+      "status": "已完成",
+      "calls": 6,
+      "rounds": 2,
+      "final_filters": {
+        "月份": "5月",
+        "用户类型": "新用户"
+      },
+      "adjudication": [
+        "修改"
+      ]
+    },
+    {
+      "phase": "after",
+      "case": "equal",
+      "run": "3b6e525c687b4cb8833f76ffe9acef82",
+      "status": "已完成",
+      "calls": 6,
+      "rounds": 2,
+      "final_filters": {
+        "月份": "5月",
+        "用户类型": "新用户"
+      },
+      "adjudication": [
+        "修改"
+      ]
+    },
+    {
+      "phase": "after",
+      "case": "bad",
+      "run": "185896bf4de145d2a86217ced8e51b58",
+      "status": "已完成",
+      "calls": 4,
+      "rounds": 1,
+      "final_filters": {
+        "月份": "5月",
+        "用户类型": "新用户"
+      },
+      "adjudication": [
+        "保留"
+      ]
+    },
+    {
+      "phase": "after",
+      "case": "unclear",
+      "run": "f9853acbf8534ed697bad42e12e22895",
+      "status": "待人工核查",
+      "calls": 3,
+      "rounds": 1,
+      "final_filters": {
+        "月份": "5月",
+        "用户类型": "新用户"
+      },
+      "adjudication": [
+        "待确认"
+      ]
+    },
+    {
+      "phase": "after",
+      "case": "control",
+      "run": "5d322efa3c6b4b4ca6d2a1a7adf3d1b2",
+      "status": "已完成",
+      "calls": 4,
+      "rounds": 1,
+      "final_filters": {
+        "月份": "5月",
+        "用户类型": "新用户"
+      },
+      "adjudication": []
+    }
+  ],
+  "totals": {
+    "before": {
+      "corrected": [
+        2,
+        2
+      ],
+      "incorrectly_changed": [
+        0,
+        2
+      ],
+      "ambiguous_deferred": [
+        0,
+        1
+      ]
+    },
+    "after": {
+      "corrected": [
+        2,
+        2
+      ],
+      "incorrectly_changed": [
+        0,
+        2
+      ],
+      "ambiguous_deferred": [
+        1,
+        1
+      ]
+    }
+  }
+}

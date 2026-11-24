@@ -1,0 +1,42 @@
+[
+  {
+    "name": "missing",
+    "file": "conversion",
+    "line": "5月新用户中，转化人数占人数的比例为10%。",
+    "actual": "all",
+    "proposal": "new",
+    "expect": "修改"
+  },
+  {
+    "name": "equal",
+    "file": "equal",
+    "line": "5月新用户中，转化人数占人数的比例为10%。",
+    "actual": "old",
+    "proposal": "new",
+    "expect": "修改"
+  },
+  {
+    "name": "bad",
+    "file": "conversion",
+    "line": "5月新用户中，转化人数占人数的比例为10%。",
+    "actual": "new",
+    "proposal": "all_den",
+    "expect": "保留"
+  },
+  {
+    "name": "unclear",
+    "file": "equal",
+    "line": "5月该组中，转化人数占人数的比例为10%。",
+    "actual": "new",
+    "proposal": "old",
+    "expect": "待确认"
+  },
+  {
+    "name": "control",
+    "file": "conversion",
+    "line": "5月新用户中，转化人数占人数的比例为10%。",
+    "actual": null,
+    "proposal": null,
+    "expect": "保留"
+  }
+]

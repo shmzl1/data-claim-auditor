@@ -1,6 +1,7 @@
 import argparse, copy, json, re, uuid
 from pathlib import Path
 from model import call
+from adjudication import decide,enrich_checks
 from stats import read_csv,profile,validate,execute,digest,SUPPORTED,CONTRADICTED,INSUFFICIENT
 
 ROOT=Path(__file__).resolve().parent
@@ -56,14 +57,16 @@ def lock(atoms,qs,results,n):
         labels.append(CONTRADICTED if CONTRADICTED in vals else INSUFFICIENT if INSUFFICIENT in vals else SUPPORTED)
     return labels
 
-def audit(raw,lines,mode="multi",inject=False,path=None,invoke=None,discovery_context=None):
+def audit(raw,lines,mode="multi",inject=False,path=None,invoke=None,discovery_context=None,trend_context=None):
     rows=read_csv(raw);invoke=invoke or call
     if mode not in ("single","multi") or not 1<=len(lines)<=20 or any(not isinstance(s,str) or not 1<=len(s.strip())<=1500 for s in lines):raise ValueError("请输入 1 至 20 条结论，每行一句")
     base=dict(sentences=[dict(source=i+1,text=s) for i,s in enumerate(lines)],schema=profile(rows))
+    if trend_context is not None:base["两期分解"]=trend_context
     if discovery_context is not None:
         base["探索口径"]=discovery_context
         base["核验提示"]="独立核查候选句。方向或大小比较属于描述；仅明确归因时标为因果。scope 只含两侧共同限定，不能包含被比较的两个不同类别、月份或季度。单一范围对常数的比较保留该范围。"
     d=dict(version=1,run_id=uuid.uuid4().hex,mode=mode,injection="人工注入：去掉首轮分组限定" if inject else None,sha256=digest(raw),row_count=len(rows),**base,events=[],rounds=[],status="运行中")
+    d["arbitration_version"]=1
     def persist():
         if path:save(path,d)
     def ask(role,r,extra,checker):
@@ -82,10 +85,15 @@ def audit(raw,lines,mode="multi",inject=False,path=None,invoke=None,discovery_co
                 atoms=check_atoms(o,len(lines));return atoms,check_queries(o,atoms)
             atoms,qs=ask("单角色",1,{"stage":"plan"},both)
         else:atoms=ask("解析",1,{},lambda o:check_atoms(o,len(lines)))
-        feedback=[];previous=None;seen=set()
+        feedback=[];previous=None;seen=set();repairs={}
         for r in range(1,4):
             if mode=="multi":qs=ask("复算",r,dict(atoms=atoms,feedback=feedback,previous=previous),lambda o:check_queries(o,atoms))
             actual=copy.deepcopy(qs)
+            for q in actual:
+                if q["id"] in repairs:
+                    # 模型重新申请计算；以经裁决的原请求副本固定未争议的一侧及比较方向。
+                    q.update(copy.deepcopy(repairs[q["id"]]))
+            repairs={}
             if inject and r==1:
                 scopes={a["id"]:a["scope"] for a in atoms}
                 for q in actual:
@@ -98,8 +106,31 @@ def audit(raw,lines,mode="multi",inject=False,path=None,invoke=None,discovery_co
             if mode=="single":break
             objections=ask("审查",r,dict(atoms=atoms,executed=actual,results=results),lambda o:check_issues(o,atoms))
             step["review"]=objections
-            step["program_checks"]=scope_issues(atoms,actual)
+            step["program_checks"]=enrich_checks(rows,lines,atoms,actual,objections,scope_issues(atoms,actual))
             feedback=objections+step["program_checks"]
+            by_id={q["id"]:q for q in actual}
+            sources={a["id"]:lines[a["source"]-1] for a in atoms}
+            pending=[]
+            decisions=[]
+            for index,issue in enumerate(feedback):
+                needs_decision=index<len(objections) and issue["target"]=="复算"
+                if issue.get("alternative") is None and not needs_decision:
+                    pending.append(issue)
+                    continue
+                decision=decide(rows,sources[issue["id"]],by_id[issue["id"]],issue)
+                decisions.append(decision)
+                if decision["action"]=="修改":
+                    corrected=repairs.setdefault(issue["id"],copy.deepcopy(by_id[issue["id"]]))
+                    alt=issue["alternative"]
+                    corrected.update(num=alt["num"],den=alt["den"])
+                    corrected[issue["side"]]=dict(alt["num_filters"])
+                    pending.append(issue)
+                elif decision["action"]=="待确认":
+                    pending.append(issue)
+            step["decisions"]=decisions
+            if any(v["action"]=="待确认" for v in decisions):
+                d.update(status="待人工核查",unresolved=pending);return d
+            feedback=pending
             if not feedback:break
             # 仅反馈给下一轮所需的上轮产物，避免递归复制旧日志。
             previous=dict(executed=actual,results=results)
@@ -108,7 +139,9 @@ def audit(raw,lines,mode="multi",inject=False,path=None,invoke=None,discovery_co
                 d.update(status="待人工核查",unresolved=feedback);return d
             seen.add(signature)
             if any(i["target"]=="解析" for i in feedback):
-                atoms=ask("解析",r+1,dict(previous_atoms=atoms,feedback=feedback),lambda o:check_atoms(o,len(lines)))
+                revised=ask("解析",r+1,dict(previous_atoms=atoms,feedback=feedback),lambda o:check_atoms(o,len(lines)))
+                repairs={a["id"]:repairs[a["id"]] for a in revised if a in atoms and a["id"] in repairs}
+                atoms=revised
         items=ask("单角色" if mode=="single" else "编辑",r,dict(stage="edit",locked=step["locked"],atoms=atoms,executed=actual,results=results),lambda o:check_edits(o,step["locked"]))
         d.update(status="已完成",items=items)
     except (RuntimeError,ValueError,KeyError,TypeError) as err:
@@ -130,6 +163,16 @@ def reproduce(raw,d):
         if len(step["executed"])!=len(step["results"]):raise ValueError("请求与结果数量不同")
         actual=[execute(rows,q) for q in step["executed"]]
         if actual!=step["results"] or lock(step["atoms"],step["executed"],actual,len(d["sentences"]))!=step["locked"]:raise ValueError("重算证据与报告不一致")
+        if "decisions" in step or (d.get("arbitration_version")==1 and "review" in step):
+            src={a["id"]:d["sentences"][a["source"]-1]["text"] for a in step["atoms"]}
+            queries={q["id"]:q for q in step["executed"]}
+            checks_from_rows=scope_issues(step["atoms"],step["executed"])
+            if d.get("arbitration_version")==1:
+                checks_from_rows=enrich_checks(rows,[s["text"] for s in d["sentences"]],step["atoms"],step["executed"],step["review"],checks_from_rows)
+            if checks_from_rows!=step["program_checks"]:raise ValueError("原表范围检查不一致")
+            reviews=step["review"]+step["program_checks"]
+            decisions=[decide(rows,src[i["id"]],queries[i["id"]],i) for j,i in enumerate(reviews) if i.get("alternative") is not None or (d.get("arbitration_version")==1 and j<len(step["review"]) and i["target"]=="复算")]
+            if decisions!=step.get("decisions"):raise ValueError("分歧裁决重算不一致")
         checks+=len(actual)
     if d["status"]=="已完成":check_edits(d,d["rounds"][-1]["locked"])
     return checks
